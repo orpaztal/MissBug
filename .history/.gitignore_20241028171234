@@ -1,0 +1,6 @@
+/node_modules
+/logs
+/config/prod.js
+/config/dev.js
+/api/auth/secret.js
+.env

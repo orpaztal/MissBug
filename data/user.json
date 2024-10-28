@@ -1,0 +1,36 @@
+[
+  {
+    "_id": "u101",
+    "isAdmin": false,
+    "fullname": "Muki 1",
+    "username": "muki1",
+    "password": "1234",
+    "score": 101
+  },
+  {
+    "_id": "u102",
+    "isAdmin": false,
+    "fullname": "Muki 2",
+    "username": "muki2",
+    "password": "1234",
+    "score": 99
+  },
+  {
+    "_id": "u103",
+    "isAdmin": false,
+    "fullname": "Muki 3",
+    "username": "muki3",
+    "password": "1234",
+    "score": 103
+  },
+  {
+    "username": "test",
+    "password": "$2b$10$sYZUBBTD9hPQG/DR6O.6keqolGnuLIz.P9cX4mkRCV2ABt0hacqxW",
+    "fullname": "test",
+    "_id": "F9glPI",
+    "isAdmin": true,
+    "score": 10000,
+    "createdAt": 1729764260928,
+    "imgUrl": "https://cdn.pixabay.com/photo/2020/07/01/12/58/icon-5359553_1280.png"
+  }
+]
