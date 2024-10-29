@@ -26,7 +26,7 @@ app.use('/api/bug', bugRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
 
-const port = process.env.PORT || 3030
+const port = process.3030
 
 app.listen(port, () => {
 	loggerService.info(`Example app listening on port ${port}`)
