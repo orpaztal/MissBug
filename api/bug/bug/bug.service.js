@@ -16,7 +16,6 @@ async function query(filterBy = {}) {
     var filteredBugs = [...bugs]
     const { title, severity, labels, sortBy, sortDir = 1, pageIdx = 0, creatorId } = filterBy; 
 
-    console.log('filterBy', filterBy)
     try {
         if (title) {
             const regExp = new RegExp(filterBy.title, 'i')

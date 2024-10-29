@@ -13,47 +13,6 @@ export const userService = {
 const PAGE_SIZE = 2
 const users = utilService.readJsonFile('./data/user.json')
 
-// async function query(filterBy = {}) {
-//     var filteredUsers = [...users]
-//     const { fullname, username, score, sortBy, sortDir = 1, pageIdx } = filterBy; 
-
-//     try {
-//         if (fullname) {
-//             const regExp = new RegExp(filterBy.fullname, 'i')
-//             filteredUsers = filteredUsers.filter(user => regExp.test(user.fullname))
-// 	    }
-
-//         if (username) {
-//             const regExp = new RegExp(filterBy.username, 'i')
-//             filteredUsers = filteredUsers.filter(user => regExp.test(user.username))
-// 	    }
-
-//         if (score) {
-//             filteredUsers = filteredUsers.filter(user => user.score >= filterBy.score)
-//         }
-
-//         if (sortBy) {
-//             filteredUsers = filteredUsers.sort((a, b) => {
-//                 let aValue = a[sortBy];
-//                 let bValue = b[sortBy];
-
-//                 // For strings like title, we need localeCompare
-//                 if (typeof aValue === 'string' && typeof bValue === 'string') {
-//                     return aValue.localeCompare(bValue) * sortDir;
-//                 }
-
-//                 // For numbers or dates, we can subtract
-//                 return (aValue - bValue) * sortDir;
-//             });
-//         }
-
-//         return filteredUsers
-//     } catch (err) {
-//         loggerService.error(err)
-//         throw `Couldn't get users...`
-//     }
-// }
-
 async function query() {
     return users
 }
