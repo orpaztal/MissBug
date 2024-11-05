@@ -1,117 +1,158 @@
+import { ObjectId } from 'mongodb'
 
 import { utilService } from '../../../services/util.service.js'
 import { loggerService } from "../../../services/logger.service.js"
+import { dbService } from '../../../services/db.service.js'
+import { asyncLocalStorage } from '../../../services/als.service.js'
 
 export const bugService = {
     query,
     getById,
-    save,
     remove,
+    add,
+    update,
+    addBugMsg,
+    removeBugMsg,
 }
 
 const PAGE_SIZE = 4
-const bugs = utilService.readJsonFile('./data/bug.json')
 
 async function query(filterBy = {}) {
-    var filteredBugs = [...bugs]
-    const { title, severity, labels, sortBy, sortDir = 1, pageIdx = 0, creatorId } = filterBy; 
-
     try {
-        if (title) {
-            const regExp = new RegExp(filterBy.title, 'i')
-            filteredBugs = filteredBugs.filter(bug => regExp.test(bug.title))
-	    }
-    
-        if (severity) {
-            filteredBugs = filteredBugs.filter(bug => bug.severity >= filterBy.severity)
+        const criteria = _buildCriteria(filterBy)
+        const sort = _buildSort(filterBy)
+
+        const collection = await dbService.getCollection('bug')
+        var bugCursor = await collection.find(criteria, { sort })
+
+        if (filterBy.pageIdx !== undefined) {
+            bugCursor.skip(filterBy.pageIdx * PAGE_SIZE).limit(PAGE_SIZE)
         }
 
-        if (labels && labels.length > 0) {
-            filteredBugs = filteredBugs.filter(bug => 
-                bug.labels?.some(label => filterBy.labels.includes(label))
-            );
-        }
-
-        if (creatorId) {
-            filteredBugs = filteredBugs.filter(bug => bug.creator?._id === creatorId);
-        }
-
-        if (sortBy) {
-            filteredBugs = filteredBugs.sort((a, b) => {
-                let aValue = a[sortBy];
-                let bValue = b[sortBy];
-
-                if (typeof aValue === 'string' && typeof bValue === 'string') {
-                    return aValue.localeCompare(bValue) * sortDir;
-                }
-
-                return (aValue - bValue) * sortDir;
-            });
-        }
-
-        if (pageIdx !== undefined) {
-            const startIdx = filterBy.pageIdx * PAGE_SIZE
-            filteredBugs = filteredBugs.slice(startIdx, startIdx + PAGE_SIZE)
-        }
-
-        return filteredBugs // change to an obj with max pages number
+        const bugs = bugCursor.toArray()
+        return bugs
     } catch (err) {
         loggerService.error(err)
-        throw `Couldn't get bugs...`
+		throw err
     }
 }
 
-async function getById(bugsId) {
+async function getById(bugId) {
     try {
-        const bug = bugs.find(bug => bug._id === bugsId)
-        if (!bug) throw `Couldn't get bug...`
-        return bug
+        const criteria = { _id: ObjectId.createFromHexString(bugId) }
+
+		const collection = await dbService.getCollection('bug')
+		const bug = await collection.findOne(criteria)
+        
+		bug.createdAt = bug._id.getTimestamp()
+		return bug
     } catch (err) {
         loggerService.error(err)
-        throw `Couldn't get bug...`
+		throw err
     }
 }
 
-async function remove(bugId, user) {
-    try {
-        const idx = bugs.findIndex(bug => bug._id === bugId)
-        if (idx === -1) throw `Bad bug Id`
+async function remove(bugId) {
+    const { loggedinUser } = asyncLocalStorage.getStore()
+    console.log("loggedinUser", loggedinUser)
+    const { _id: creatorId, isAdmin } = loggedinUser
 
-        if(!user.isAdmin) {
-            if (bugs[idx].creator._id !== user._id)throw `This is not your bug`
+	try {
+        const criteria = { 
+            _id: ObjectId.createFromHexString(bugId), 
         }
+       
+        if (!isAdmin) criteria['creator._id'] = creatorId
+        
+		const collection = await dbService.getCollection('bug')
+		const res = await collection.deleteOne(criteria)
 
-        bugs.splice(idx, 1)
-        _saveBugs()
+        if(res.deletedCount === 0) throw('Not your bug')
+		return bugId
+
     } catch (err) {
         loggerService.error(err)
-        throw `Couldn't remove bug`
+		throw err
     }
 }
 
-async function save(bugToSave, user) {
+async function add(bug) {
+	try {
+		const collection = await dbService.getCollection('bug')
+		await collection.insertOne(bug)
+
+		return bug
+	} catch (err) {
+		loggerService.error('cannot insert bug', err)
+		throw err
+	}
+}
+
+async function update(bug) {
+    const bugToSave = { severity: bug.severity }
+
     try {
-        if (bugToSave._id) {
-            const idx = bugs.findIndex(bug => bug._id === bugToSave._id)
-            if (idx === -1) throw `Bad bug Id`
+        const criteria = { _id: ObjectId.createFromHexString(bug._id) }
 
-            if(!user.isAdmin) {
-                if (bugs[idx].creator._id !== user._id)throw `This is not your bug`
-            }
+		const collection = await dbService.getCollection('bug')
+		await collection.updateOne(criteria, { $set: bugToSave })
 
-            bugs.splice(idx, 1, bugToSave)
-        } else {
-            bugToSave._id = utilService.makeId()
-            bugs.push(bugToSave)
-        }
-        _saveBugs()
-    } catch (err) {
-        loggerService.error(err)
-        throw `couldn't save bug`
-    }
-    return bugToSave
+		return bug
+	} catch (err) {
+		loggerService.error(`cannot update bug ${bug._id}`, err)
+		throw err
+	}
 }
 
-async function _saveBugs() {
-    utilService.writeJsonFile('./data/bug.json', bugs)
+async function addBugMsg(bugId, msg) {
+	try {
+        const criteria = { _id: ObjectId.createFromHexString(bugId) }
+        // msg.id = utilService.makeId()
+        
+		const collection = await dbService.getCollection('bug')
+		await collection.updateOne(criteria, { $push: { msgs: msg } })
+
+		return msg
+	} catch (err) {
+		loggerService.error(`cannot add bug msg ${bugId}`, err)
+		throw err
+	}
+}
+
+async function removeBugMsg(bugId, msgId) {
+	try {
+        const criteria = { _id: ObjectId.createFromHexString(bugId) }
+
+		const collection = await dbService.getCollection('bug')
+		await collection.updateOne(criteria, { $pull: { msgs: { id: msgId }}})
+        
+		return msgId
+	} catch (err) {
+		loggerService.error(`cannot remove bug msg ${bugId}`, err)
+		throw err
+	}
+}
+
+function _buildCriteria(filterBy) {
+    const criteria = {
+        title: { $regex: filterBy.title, $options: 'i' },
+        severity: { $gte: filterBy.severity },
+    }
+
+    //     if (labels && labels.length > 0) {
+    //         filteredBugs = filteredBugs.filter(bug => 
+    //             bug.labels?.some(label => filterBy.labels.includes(label))
+    //         );
+    //     }
+
+    //     if (creatorId) {
+    //         filteredBugs = filteredBugs.filter(bug => bug.creator?._id === creatorId);
+    //     }
+
+    return criteria
+}
+
+function _buildSort(filterBy) {
+    if (!filterBy.sortBy) return {}
+    return { [filterBy.sortBy]: filterBy.sortDir }
 }

@@ -28,11 +28,8 @@
     "_id": "w64Bhh",
     "title": "testing",
     "description": "bka",
-    "severity": 4,
+    "severity": 5,
     "createdAt": "Mon Oct 14 2024 16:55:33 GMT 0300 (Israel Daylight Time)",
-    "labels": [
-      "critical"
-    ],
     "creator": {
       "_id": "u101",
       "fullname": "Puki Ja"
@@ -158,19 +155,6 @@
       "isAdmin": false
     },
     "createdAt": 1729607277225
-  },
-  {
-    "_id": "xWfLpt",
-    "title": "tee",
-    "description": "dd",
-    "severity": 4,
-    "createdAt": 1730045499183,
-    "creator": {
-      "_id": "u102",
-      "fullname": "Muki 2",
-      "score": 99,
-      "isAdmin": false
-    }
   },
   {
     "title": "eeee",
