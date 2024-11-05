@@ -29,7 +29,6 @@ async function query(filterBy = {}) {
         }
 
         const bugs = bugCursor.toArray()
-        console.log("bugs", bugs)
         return bugs
     } catch (err) {
         loggerService.error(err)

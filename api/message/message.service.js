@@ -25,31 +25,24 @@ async function query(filterBy = {}) {
             {
                 $unwind: '$byUser',
             },
-            // {
-            //     $lookup: {
-            //         localField: 'aboutBugId',
-            //         from: 'bug', foreignField: '_id',
-            //         as: 'aboutBug',
-            //     },
-            // },
-            // {
-            //     $unwind: '$aboutBug',
-            // },
+            {
+                $lookup: {
+                    localField: 'aboutBugId',
+                    from: 'bug', foreignField: '_id',
+                    as: 'aboutBug',
+                },
+            },
+            {
+                $unwind: '$aboutBug',
+            },
             { 
                 $project: {
                     'txt': true, 
                     'byUser._id': true, 'byUser.fullname': true,
-                    // 'aboutBug._id': true, 'aboutBug.title': true, 'aboutBug.severity': true,
+                    'aboutBug._id': true, 'aboutBug.title': true, 'aboutBug.severity': true,
                 } 
             }
         ]).toArray()
-
-        // var bugCursor = await collection.find(criteria)
-
-        // const messages = bugCursor.toArray()
-        // return messages
-
-        console.log("collection messages: ", messages)
 
 		return messages
 	} catch (err) {
@@ -82,8 +75,8 @@ async function remove(messageId) {
 async function add(message) {
     try {
         const messageToAdd = {
-            byUserId: message.byUserId,
-			aboutBugId: message.aboutBugId,
+            byUserId: ObjectId.createFromHexString(message.byUserId),
+			aboutBugId: ObjectId.createFromHexString(message.aboutBugId),
 			txt: message.txt,
 		}
 		const collection = await dbService.getCollection('message')

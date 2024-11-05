@@ -1,6 +1,7 @@
 
 import { bugService } from "./bug.service.js"
 import { loggerService } from "../../../services/logger.service.js"
+import { ObjectId } from 'mongodb'
 
 export async function getBugs (req, res) {
 	const { title, severity, labels, sortBy, sortDir, pageIdx, creatorId } = req.query
@@ -39,9 +40,9 @@ export async function getBug (req, res) {
 
 export async function addBug (req, res) {
 	const user = req.loggedinUser
-	console.log("userrr:", user)
-	const { title, description, severity } = req.body
+	user._id = ObjectId.createFromHexString(user._id)
 
+	const { title, description, severity } = req.body
 	const bugToSave = { title, description, severity: +severity, creator: user }
 
 	try {
