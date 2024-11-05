@@ -1,7 +1,8 @@
 import express from 'express'
+import http from 'http'
+import path from 'path'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import { setupAsyncLocalStorage } from './middlewares/setupAls.middleware.js'
 
 import { loggerService } from './services/logger.service.js'
 import { bugRoutes } from './api/bug/bug/bug.routes.js'
@@ -9,7 +10,10 @@ import { userRoutes } from './api/user/user.routes.js'
 import { authRoutes } from './api/auth/auth.routes.js'
 import { messageRoutes } from './api/message/message.routes.js'
 
+import { setupAsyncLocalStorage } from './middlewares/setupAls.middleware.js'
+
 const app = express()
+const server = http.createServer(app)
 
 // const corsOptions = {
 // 	origin: [
@@ -37,9 +41,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.all('*', setupAsyncLocalStorage)
-
-// app.use(express.static('public'))
-// app.use(cors(corsOptions))
 
 app.use('/api/bug', bugRoutes)
 app.use('/api/user', userRoutes)

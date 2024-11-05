@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb'
 
-import { utilService } from '../../../services/util.service.js'
 import { loggerService } from "../../../services/logger.service.js"
 import { dbService } from '../../../services/db.service.js'
 import { asyncLocalStorage } from '../../../services/als.service.js'
@@ -30,6 +29,7 @@ async function query(filterBy = {}) {
         }
 
         const bugs = bugCursor.toArray()
+        console.log("bugs", bugs)
         return bugs
     } catch (err) {
         loggerService.error(err)
